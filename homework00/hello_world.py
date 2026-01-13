@@ -1,2 +1,2 @@
-def text(message="Hello, World!"):
+def text(message):
     return message
