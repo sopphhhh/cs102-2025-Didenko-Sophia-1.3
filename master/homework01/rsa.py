@@ -17,15 +17,15 @@ def is_prime(n: int) -> bool:
 
     if n == 2:
         return True
-    
+
     if n % 2 == 0:
         return False
-    
-    limit = int(n ** 0.5) + 1
+
+    limit = int(n**0.5) + 1
     for i in range(3, limit, 2):
         if n % i == 0:
             return False
-    
+
     return True
 
 
@@ -39,7 +39,7 @@ def gcd(a: int, b: int) -> int:
     """
     while b != 0:
         a, b = b, a % b
-    
+
     return abs(a)
 
 
@@ -53,13 +53,13 @@ def multiplicative_inverse(e: int, phi: int) -> int:
     original_phi = phi
     x0, x1 = 1, 0
     y0, y1 = 0, 1
-    
+
     while phi != 0:
         q = e // phi
         e, phi = phi, e % phi
         x0, x1 = x1, x0 - q * x1
         y0, y1 = y1, y0 - q * y1
-    
+
     d = x0 % original_phi
     return d
 
@@ -72,7 +72,7 @@ def generate_keypair(p: int, q: int) -> tp.Tuple[tp.Tuple[int, int], tp.Tuple[in
 
     n = p * q
     phi = (p - 1) * (q - 1)
-    e = random.randrange(2, phi) 
+    e = random.randrange(2, phi)
 
     g = gcd(e, phi)
     while g != 1:
@@ -92,7 +92,7 @@ def encrypt(pk: tp.Tuple[int, int], plaintext: str) -> tp.List[int]:
 
 def decrypt(pk: tp.Tuple[int, int], ciphertext: tp.List[int]) -> str:
     key, n = pk
-    plain = [chr((char ** key) % n) for char in ciphertext]
+    plain = [chr((char**key) % n) for char in ciphertext]
     return "".join(plain)
 
 
