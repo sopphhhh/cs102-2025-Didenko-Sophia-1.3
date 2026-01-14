@@ -1,6 +1,6 @@
 from copy import deepcopy
 from random import choice, randint
-from typing import List, Optional, Tuple, Union, cast
+from typing import List, Optional, Tuple, Union
 
 import pandas as pd
 
@@ -137,6 +137,11 @@ def encircled_exit(grid: List[List[str]], coord: Tuple[int, int]) -> bool:
     return True
 
 
+def convert_grid_to_mixed(grid: List[List[str]]) -> List[List[Union[str, int]]]:
+    """Преобразует grid из List[List[str]] в List[List[Union[str, int]]]."""
+    return [[cell for cell in row] for row in grid]
+
+
 def solve_maze(
     grid: List[List[str]],
 ) -> Tuple[List[List[Union[str, int]]], Optional[List[Tuple[int, int]]]]:
@@ -150,16 +155,16 @@ def solve_maze(
     exits = get_exits(grid)
     if len(exits) != 2:
 
-        result_grid: List[List[Union[str, int]]] = [[cell for cell in row] for row in grid]
-        return result_grid, None
+        converted_grid = convert_grid_to_mixed(grid)
+        return converted_grid, None
 
     for exit_coord in exits:
         if encircled_exit(grid, exit_coord):
 
-            result_grid: List[List[Union[str, int]]] = [[cell for cell in row] for row in grid]
-            return result_grid, None
+            converted_grid = convert_grid_to_mixed(grid)
+            return converted_grid, None
 
-    wave_grid: List[List[Union[str, int]]] = [[cell for cell in row] for row in grid]
+    wave_grid = convert_grid_to_mixed(grid)
 
     start, end = exits[0], exits[1]
 
