@@ -9,26 +9,21 @@ class GUI(UI):
         super().__init__(life)
         self.cell_size = cell_size
         self.speed = speed
-        
-        
+
         self.width = self.life.cols * cell_size
         self.height = self.life.rows * cell_size
-        
-        
+
         pygame.init()
         self.screen = pygame.display.set_mode((self.width, self.height))
         pygame.display.set_caption("Game of Life")
-        
-        
-        self.bg_color = (255, 255, 255)  
-        self.grid_color = (128, 128, 128)  
-        self.cell_color = (0, 128, 0)  
-        self.text_color = (0, 0, 0)  
-        
-        
+
+        self.bg_color = (255, 255, 255)
+        self.grid_color = (128, 128, 128)
+        self.cell_color = (0, 128, 0)
+        self.text_color = (0, 0, 0)
+
         self.font = pygame.font.SysFont(None, 24)
-        
-        
+
         self.paused = False
         self.generation_count = 0
 
@@ -45,42 +40,25 @@ class GUI(UI):
             for j in range(self.life.cols):
                 x = j * self.cell_size
                 y = i * self.cell_size
-                
-                
+
                 if self.life.curr_generation[i][j] == 1:
-                    pygame.draw.rect(
-                        self.screen, 
-                        self.cell_color, 
-                        (x, y, self.cell_size, self.cell_size)
-                    )
+                    pygame.draw.rect(self.screen, self.cell_color, (x, y, self.cell_size, self.cell_size))
                 else:
-                    pygame.draw.rect(
-                        self.screen, 
-                        self.bg_color, 
-                        (x, y, self.cell_size, self.cell_size)
-                    )
-                
-                
-                pygame.draw.rect(
-                    self.screen,
-                    self.grid_color,
-                    (x, y, self.cell_size, self.cell_size),
-                    1
-                )
+                    pygame.draw.rect(self.screen, self.bg_color, (x, y, self.cell_size, self.cell_size))
+
+                pygame.draw.rect(self.screen, self.grid_color, (x, y, self.cell_size, self.cell_size), 1)
 
     def draw_info(self) -> None:
         """Отрисовка информации о состоянии игры"""
-        
+
         gen_text = f"Generation: {self.generation_count}"
         text_surface = self.font.render(gen_text, True, self.text_color)
         self.screen.blit(text_surface, (10, 10))
-        
-        
+
         pause_text = "PAUSED" if self.paused else "RUNNING"
         pause_surface = self.font.render(pause_text, True, self.text_color)
         self.screen.blit(pause_surface, (10, 40))
-        
-        
+
         instr_text = "SPACE: pause/resume  R: reset  ESC: exit"
         instr_surface = self.font.render(instr_text, True, self.text_color)
         self.screen.blit(instr_surface, (10, self.height - 30))
@@ -90,19 +68,18 @@ class GUI(UI):
         x, y = pos
         col = x // self.cell_size
         row = y // self.cell_size
-        
-        
+
         if 0 <= row < self.life.rows and 0 <= col < self.life.cols:
-            
+
             self.life.curr_generation[row][col] = 1 - self.life.curr_generation[row][col]
 
     def run(self) -> None:
         """Запуск игры"""
         clock = pygame.time.Clock()
         running = True
-        
+
         while running:
-            
+
             for event in pygame.event.get():
                 if event.type == QUIT:
                     running = False
@@ -112,54 +89,45 @@ class GUI(UI):
                     elif event.key == K_SPACE:
                         self.paused = not self.paused
                     elif event.key == K_r:
-                        
+
                         self.life = GameOfLife(
                             size=(self.life.rows, self.life.cols),
                             randomize=True,
-                            max_generations=self.life.max_generations
+                            max_generations=self.life.max_generations,
                         )
                         self.generation_count = 0
                 elif event.type == MOUSEBUTTONDOWN:
-                    if event.button == 1:  
+                    if event.button == 1:
                         self.handle_click(event.pos)
-            
-            
+
             if not self.paused:
-                
+
                 prev_generation = [row[:] for row in self.life.curr_generation]
-                
-                
+
                 self.life.step()
                 self.generation_count += 1
-                
-                
+
                 if self.life.curr_generation == prev_generation:
-                    
+
                     self.paused = True
-            
-            
+
             if self.life.is_max_generations_exceeded:
                 self.paused = True
-            
-            
+
             self.screen.fill(self.bg_color)
             self.draw_grid()
             self.draw_lines()
             self.draw_info()
-            
+
             pygame.display.flip()
             clock.tick(self.speed)
-        
+
         pygame.quit()
 
 
 if __name__ == "__main__":
-    life = GameOfLife(
-        size=(40, 60),  
-        randomize=True,
-        max_generations=float("inf") 
-    )
-    
+    life = GameOfLife(size=(40, 60), randomize=True, max_generations=float("inf"))
+
     gui = GUI(life, cell_size=15, speed=10)
-    
+
     gui.run()

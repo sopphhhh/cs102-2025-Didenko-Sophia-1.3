@@ -17,30 +17,30 @@ class GameOfLife:
         randomize: bool = True,
         max_generations: tp.Optional[float] = float("inf"),
     ) -> None:
-        
+
         self.rows, self.cols = size
-        
+
         self.prev_generation = self.create_grid()
-        
+
         self.curr_generation = self.create_grid(randomize=randomize)
-        
+
         self.max_generations = max_generations
-        
+
         self.generations = 1
 
     def create_grid(self, randomize: bool = False) -> Grid:
         """
         Создание списка клеток.
-        
+
         Клетка считается живой, если ее значение равно 1, в противном случае клетка
         считается мертвой, то есть, ее значение равно 0.
-        
+
         Parameters
         ----------
         randomize : bool
             Если значение истина, то создается матрица, где каждая клетка может
             быть равновероятно живой или мертвой, иначе все клетки создаются мертвыми.
-            
+
         Returns
         ----------
         out : Grid
@@ -51,10 +51,10 @@ class GameOfLife:
             row = []
             for j in range(self.cols):
                 if randomize:
-                    
+
                     cell_value = random.randint(0, 1)
                 else:
-                    
+
                     cell_value = 0
                 row.append(cell_value)
             grid.append(row)
@@ -63,16 +63,16 @@ class GameOfLife:
     def get_neighbours(self, cell: Cell) -> Cells:
         """
         Вернуть список соседних клеток для клетки `cell`.
-        
+
         Соседними считаются клетки по горизонтали, вертикали и диагоналям,
         то есть, во всех направлениях.
-        
+
         Parameters
         ----------
         cell : Cell
             Клетка, для которой необходимо получить список соседей. Клетка
             представлена кортежем, содержащим ее координаты на игровом поле.
-            
+
         Returns
         ----------
         out : Cells
@@ -80,65 +80,59 @@ class GameOfLife:
         """
         row, col = cell
         neighbours = []
-        
-        
+
         for i in range(-1, 2):
             for j in range(-1, 2):
                 if i == 0 and j == 0:
-                    continue  
-                
+                    continue
+
                 neighbor_row = row + i
                 neighbor_col = col + j
-                
-                
-                if (0 <= neighbor_row < self.rows and 
-                    0 <= neighbor_col < self.cols):
+
+                if 0 <= neighbor_row < self.rows and 0 <= neighbor_col < self.cols:
                     neighbours.append(self.curr_generation[neighbor_row][neighbor_col])
-        
+
         return neighbours
 
     def get_next_generation(self) -> Grid:
         """
         Получить следующее поколение клеток.
-        
+
         Returns
         ----------
         out : Grid
             Новое поколение клеток.
         """
-        new_grid = self.create_grid(randomize=False)  
-        
+        new_grid = self.create_grid(randomize=False)
+
         for i in range(self.rows):
             for j in range(self.cols):
                 current_cell = self.curr_generation[i][j]
                 neighbours = self.get_neighbours((i, j))
-                live_neighbours = sum(neighbours)  
-                
-                
-                if current_cell == 1:  
+                live_neighbours = sum(neighbours)
+
+                if current_cell == 1:
                     if live_neighbours < 2 or live_neighbours > 3:
-                        new_grid[i][j] = 0  
+                        new_grid[i][j] = 0
                     else:
-                        new_grid[i][j] = 1  
-                else:  
+                        new_grid[i][j] = 1
+                else:
                     if live_neighbours == 3:
-                        new_grid[i][j] = 1  
+                        new_grid[i][j] = 1
                     else:
-                        new_grid[i][j] = 0  
-        
+                        new_grid[i][j] = 0
+
         return new_grid
 
     def step(self) -> None:
         """
         Выполнить один шаг игры.
         """
-        
+
         self.prev_generation = [row[:] for row in self.curr_generation]
-        
-        
+
         self.curr_generation = self.get_next_generation()
-        
-        
+
         self.generations += 1
 
     @property
@@ -159,72 +153,63 @@ class GameOfLife:
     def from_file(filename: pathlib.Path) -> "GameOfLife":
         """
         Прочитать состояние клеток из указанного файла.
-        
+
         Формат файла: каждая строка - строка сетки, значения через пробел.
         Пример:
         0 1 0
         1 0 1
         0 1 0
         """
-        with open(filename, 'r') as f:
+        with open(filename, "r") as f:
             lines = f.readlines()
-        
-        
+
         grid = []
         for line in lines:
             line = line.strip()
             if line:
                 row = [int(x) for x in line.split()]
                 grid.append(row)
-        
-        
+
         rows = len(grid)
         cols = len(grid[0]) if rows > 0 else 0
-        
-        
+
         for row in grid:
             if len(row) != cols:
                 raise ValueError("All rows must have the same length")
-        
-        
+
         game = GameOfLife(size=(rows, cols), randomize=False, max_generations=float("inf"))
         game.curr_generation = grid
         game.prev_generation = game.create_grid()
-        
+
         return game
 
     def save(self, filename: pathlib.Path) -> None:
         """
         Сохранить текущее состояние клеток в указанный файл.
-        
+
         Формат файла: каждая строка - строка сетки, значения через пробел.
         """
-        with open(filename, 'w') as f:
+        with open(filename, "w") as f:
             for row in self.curr_generation:
-                line = ' '.join(str(cell) for cell in row)
-                f.write(line + '\n')
-
+                line = " ".join(str(cell) for cell in row)
+                f.write(line + "\n")
 
 
 if __name__ == "__main__":
-    
+
     game = GameOfLife(size=(20, 20), randomize=True, max_generations=100)
-    
+
     print(f"Начальное поколение: поколение {game.generations}")
     print(f"Максимальное количество поколений: {game.max_generations}")
-    
-    
+
     for _ in range(5):
         game.step()
         print(f"Поколение {game.generations}: меняется = {game.is_changing}")
-    
-    
+
     print(f"Превышен лимит поколений? {game.is_max_generations_exceeded}")
-    
-    
+
     game.save(pathlib.Path("game_state.txt"))
-    
-    
+
     try:
         loaded_game = GameOfLife.from_file(pathlib.Path("game_state.txt"))
         print(f"\nЗагружена игра размера {loaded_game.rows}x{loaded_game.cols}")
